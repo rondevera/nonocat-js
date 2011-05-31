@@ -1,4 +1,3 @@
-/*jslint browser: true */
 /*global alert, console */
 
 (function(w, d){

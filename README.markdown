@@ -9,4 +9,10 @@ Features:
 
 Tested only in Safari, Chrome, and Firefox; there are a few places where I
 know it'll break in IE. Intentionally doesn't use jQuery (yes, GitHub's
-already using it) because I'm masochistic.
+already using it) or other libraries because I'm masochistic.
+
+Released under the [MIT license][license].
+
+
+
+[license]: https://github.com/rondevera/nonocat-js/blob/master/LICENSE

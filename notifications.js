@@ -1,7 +1,16 @@
 /*global alert, console */
 
 (function(w, d){
-  function arrayContainsArray(bigArray, smallArray){
+  var Utils   = {},
+      DOM     = {},
+      Network = {},
+      Nonocat = {};
+
+
+
+  /*** Utils ***/
+
+  Utils.arrayContainsArray = function(bigArray, smallArray){
     // Returns `true` if all elements in `smallArray` can be found in
     // `bigArray`.
 
@@ -13,9 +22,13 @@
     }
 
     return isContained;
-  }
+  };
 
-  function getElementsByClassNames(classNames, rootElem){
+
+
+  /*** DOM ***/
+
+  DOM.getElementsByClassNames = function(classNames, rootElem){
     if(!rootElem){ rootElem = d.body; }
 
     if(rootElem.querySelectorAll){
@@ -30,26 +43,31 @@
       child = rootElem.children[i];
       if(child.className){
         childClassNames = child.className.split(/\s+/);
-        if(arrayContainsArray(classNames, childClassNames)){
+        if(Utils.arrayContainsArray(classNames, childClassNames)){
           elems.push(child);
         }
       }
-      elems = elems.concat(getElementsByClassNames(classNames, child));
+      elems = elems.concat(
+        DOM.getElementsByClassNames(classNames, child));
     }
 
     return elems;
-  }
+  };
 
-  function getElementsByClassName(className, rootElem){
-    return getElementsByClassNames([className], rootElem || d.body);
-  }
+  DOM.getElementsByClassName = function(className, rootElem){
+    return DOM.getElementsByClassNames([className], rootElem || d.body);
+  };
 
-  function removeElementClassName(elem, className){
+  DOM.removeElementClassName = function(elem, className){
     elem.className = elem.className.
       replace(new RegExp('(^|\\s+)' + className + '(\\s+|$)'), ' ').trim();
-  }
+  };
 
-  function sendAjaxRequest(url, options){
+
+
+  /*** Network ***/
+
+  Network.sendAjaxRequest = function(url, options){
     // `options`:
     // - onSuccess:   <function(xhr)>
     // - onError:     <function(xhr)>
@@ -88,10 +106,14 @@
 
     request.open(method, url, isAsync);
     request.send(data);
-  }
+  };
 
-  function markNotificationAsRead(notifElem){
-    var subject = getElementsByClassName('subject', notifElem)[0],
+
+
+  /*** Nonocat ***/
+
+  Nonocat.markNotificationAsRead = function(notifElem){
+    var subject = DOM.getElementsByClassName('subject', notifElem)[0],
         notifId;
 
     if(!subject){ return; }
@@ -105,21 +127,21 @@
     }
 
     // Mark notification as unread
-    sendAjaxRequest('https://github.com/?_nid=' + notifId, {
+    Network.sendAjaxRequest('https://github.com/?_nid=' + notifId, {
       onSuccess: function(xhr){
-        removeElementClassName(notifElem, 'unread');
+        DOM.removeElementClassName(notifElem, 'unread');
         console.log('Marked as read: notification #' + notifId);
       },
       onError: function(xhr){
         alert('There was a problem marking this notification as read.');
       }
     });
-  }
+  };
 
-  function onNotificationDblclick(ev){
-    markNotificationAsRead(this);
+  Nonocat.onNotificationDblclick = function(ev){
+    Nonocat.markNotificationAsRead(this);
     ev.preventDefault();
-  }
+  };
 
 
 
@@ -128,7 +150,7 @@
     var notifs, notif, i;
 
     // Find notifications
-    notifs = getElementsByClassNames(['item', 'unread']);
+    notifs = DOM.getElementsByClassNames(['item', 'unread']);
     if(!notifs[0]){
       alert('No notifications found.');
       return;
@@ -138,7 +160,8 @@
     while(i--){
       notif = notifs[i];
       if(notif.addEventListener){
-        notif.addEventListener('dblclick', onNotificationDblclick, false);
+        notif.addEventListener(
+          'dblclick', Nonocat.onNotificationDblclick, false);
       }else{
         alert("Couldn't bind the double-click handler.");
       }

@@ -28,30 +28,54 @@
 
   /*** DOM ***/
 
-  DOM.getElementsByClassNames = function(classNames, rootElem){
+  DOM.elementHasClassNames = function(elem, classNames){
+    var elemClassName = elem.className;
+    return  !!elemClassName &&
+            Utils.arrayContainsArray(
+              classNames, elemClassName.split(/\s+/));
+  };
+
+  DOM.getElementsByClassNames = function(classNames, rootElem, stack){
     if(!rootElem){ rootElem = d.body; }
 
+    // Use native selector engine, if any
     if(rootElem.querySelectorAll){
-      return rootElem.querySelectorAll('.' + classNames.join(',.'));
+      return rootElem.querySelectorAll('.' + classNames.join('.'));
     }
 
-    var elems = [],
-        i = rootElem.children.length,
-        child, childClassNames;
+    var matches = [],
+        elem    = rootElem;
 
-    while(i--){
-      child = rootElem.children[i];
-      if(child.className){
-        childClassNames = child.className.split(/\s+/);
-        if(Utils.arrayContainsArray(classNames, childClassNames)){
-          elems.push(child);
-        }
+    if(!stack){
+      stack = [rootElem]; // Initialize stack; contains elements to be checked
+    }else if(!stack[0]){
+      return matches;     // Emptied stack; done
+    }
+
+    // Check current element
+    if(DOM.elementHasClassNames(rootElem, classNames)){
+      matches.push(rootElem);
+    }
+
+    // Add immediate children to stack
+    if(elem.firstElementChild){
+      // Add first child
+      elem = elem.firstElementChild;
+      stack.push(elem);
+
+      // Add subsequent children
+      elem = elem.nextElementSibling;
+      while(elem){ // or: `while(elem = elem.nextElementSibling)`
+        stack.push(elem);
+        elem = elem.nextElementSibling;
       }
-      elems = elems.concat(
-        DOM.getElementsByClassNames(classNames, child));
     }
 
-    return elems;
+    // Recurse on the stack's top element
+    matches = matches.concat(
+      DOM.getElementsByClassNames(classNames, stack.pop(), stack));
+
+    return matches;
   };
 
   DOM.getElementsByClassName = function(className, rootElem){
@@ -116,7 +140,10 @@
     var subject = DOM.getElementsByClassName('subject', notifElem)[0],
         notifId;
 
-    if(!subject){ return; }
+    if(!subject){
+      console.log('No subject found.');
+      return;
+    }
 
     try{
       notifId = subject.href.match(/\?_nid=(\d+)(#.*)?$/)[1];

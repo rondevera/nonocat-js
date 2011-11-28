@@ -137,16 +137,17 @@
   /*** Nonocat ***/
 
   Nonocat.markNotificationAsRead = function(notifElem){
-    var subject = DOM.getElementsByClassName('subject', notifElem)[0],
+    var deleteControl = DOM.getElementsByClassName('del', notifElem)[0].
+                          firstChild,
         notifId;
 
-    if(!subject){
-      console.log('No subject found.');
+    if(!deleteControl){
+      console.log('No delete control found.');
       return;
     }
 
     try{
-      notifId = subject.href.match(/\?_nid=(\d+)(#.*)?$/)[1];
+      notifId = deleteControl.getAttribute('rel').split('/')[2];
       console.log('Marking notification #' + notifId + ' as read...');
     }catch(err){
       alert("Couldn't find notification ID.");
